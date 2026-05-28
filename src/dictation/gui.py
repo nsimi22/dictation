@@ -67,6 +67,19 @@ class DictationGUI:
             pass  # window already destroyed
 
     # -- layout -------------------------------------------------------------
+    def _labeled(self, parent, text, widget, row) -> None:
+        """Place a caption in column 0 and an input widget in column 1."""
+        self.ttk.Label(parent, text=text).grid(
+            row=row, column=0, sticky="w", padx=8, pady=4
+        )
+        widget.grid(row=row, column=1, sticky="ew", padx=8, pady=4)
+
+    def _check(self, parent, text, var, row) -> None:
+        """Place a full-width checkbox spanning both columns."""
+        self.ttk.Checkbutton(parent, text=text, variable=var).grid(
+            row=row, column=0, columnspan=2, sticky="w", padx=8, pady=2
+        )
+
     def _build_widgets(self) -> None:
         tk, ttk = self.tk, self.ttk
         pad = {"padx": 10, "pady": 4}
@@ -76,7 +89,9 @@ class DictationGUI:
         status_frame.pack(fill="x", **pad)
         self.status_dot = tk.Canvas(status_frame, width=14, height=14, highlightthickness=0)
         self.status_dot.pack(side="left")
-        self._dot = self.status_dot.create_oval(2, 2, 12, 12, fill=STATUS_COLORS["stopped"], outline="")
+        self._dot = self.status_dot.create_oval(
+            2, 2, 12, 12, fill=STATUS_COLORS["stopped"], outline=""
+        )
         self.status_label = ttk.Label(status_frame, text="Stopped", font=("", 12, "bold"))
         self.status_label.pack(side="left", padx=8)
 
@@ -86,55 +101,60 @@ class DictationGUI:
         settings.columnconfigure(1, weight=1)
         row = 0
 
-        ttk.Label(settings, text="Hold-to-talk key").grid(row=row, column=0, sticky="w", padx=8, pady=4)
         self.var_hotkey = tk.StringVar(value=self.config.hotkey)
-        ttk.Entry(settings, textvariable=self.var_hotkey).grid(row=row, column=1, sticky="ew", padx=8, pady=4)
-        row += 1
-
-        ttk.Label(settings, text="Model").grid(row=row, column=0, sticky="w", padx=8, pady=4)
-        self.var_model = tk.StringVar(value=self.config.model)
-        ttk.Combobox(settings, textvariable=self.var_model, values=MODEL_CHOICES).grid(
-            row=row, column=1, sticky="ew", padx=8, pady=4
+        self._labeled(
+            settings, "Hold-to-talk key",
+            ttk.Entry(settings, textvariable=self.var_hotkey), row,
         )
         row += 1
 
-        ttk.Label(settings, text="Language").grid(row=row, column=0, sticky="w", padx=8, pady=4)
-        self.var_language = tk.StringVar(value=self.config.language or "auto")
-        ttk.Entry(settings, textvariable=self.var_language).grid(row=row, column=1, sticky="ew", padx=8, pady=4)
+        self.var_model = tk.StringVar(value=self.config.model)
+        self._labeled(
+            settings, "Model",
+            ttk.Combobox(settings, textvariable=self.var_model, values=MODEL_CHOICES), row,
+        )
         row += 1
 
-        ttk.Label(settings, text="Microphone").grid(row=row, column=0, sticky="w", padx=8, pady=4)
+        self.var_language = tk.StringVar(value=self.config.language or "auto")
+        self._labeled(
+            settings, "Language",
+            ttk.Entry(settings, textvariable=self.var_language), row,
+        )
+        row += 1
+
         self.var_device = tk.StringVar()
         self._device_map = self._discover_devices()
-        device_box = ttk.Combobox(
-            settings, textvariable=self.var_device, values=list(self._device_map.keys()), state="readonly"
+        self._labeled(
+            settings, "Microphone",
+            ttk.Combobox(
+                settings, textvariable=self.var_device,
+                values=list(self._device_map.keys()), state="readonly",
+            ),
+            row,
         )
-        device_box.grid(row=row, column=1, sticky="ew", padx=8, pady=4)
         self.var_device.set(self._initial_device_label())
         row += 1
 
-        ttk.Label(settings, text="Output mode").grid(row=row, column=0, sticky="w", padx=8, pady=4)
         self.var_output = tk.StringVar(value=self.config.output_mode)
-        ttk.Combobox(
-            settings, textvariable=self.var_output, values=["paste", "type"], state="readonly"
-        ).grid(row=row, column=1, sticky="ew", padx=8, pady=4)
+        self._labeled(
+            settings, "Output mode",
+            ttk.Combobox(
+                settings, textvariable=self.var_output,
+                values=["paste", "type"], state="readonly",
+            ),
+            row,
+        )
         row += 1
 
         # Checkboxes.
         self.var_capitalize = tk.BooleanVar(value=self.config.capitalize_first)
         self.var_trailing = tk.BooleanVar(value=self.config.trailing_space)
         self.var_sound = tk.BooleanVar(value=self.config.sound_cues)
-        ttk.Checkbutton(settings, text="Capitalize first letter", variable=self.var_capitalize).grid(
-            row=row, column=0, columnspan=2, sticky="w", padx=8, pady=2
-        )
+        self._check(settings, "Capitalize first letter", self.var_capitalize, row)
         row += 1
-        ttk.Checkbutton(settings, text="Add trailing space", variable=self.var_trailing).grid(
-            row=row, column=0, columnspan=2, sticky="w", padx=8, pady=2
-        )
+        self._check(settings, "Add trailing space", self.var_trailing, row)
         row += 1
-        ttk.Checkbutton(settings, text="Sound cues", variable=self.var_sound).grid(
-            row=row, column=0, columnspan=2, sticky="w", padx=8, pady=2
-        )
+        self._check(settings, "Sound cues", self.var_sound, row)
         row += 1
 
         # Buttons.
@@ -142,7 +162,9 @@ class DictationGUI:
         btns.pack(fill="x", **pad)
         self.start_btn = ttk.Button(btns, text="Start Dictation", command=self._toggle)
         self.start_btn.pack(side="left")
-        ttk.Button(btns, text="Save Settings", command=self._save_settings).pack(side="left", padx=8)
+        ttk.Button(btns, text="Save Settings", command=self._save_settings).pack(
+            side="left", padx=8
+        )
 
         # Log / transcript area.
         log_frame = ttk.LabelFrame(self.root, text="Activity")
