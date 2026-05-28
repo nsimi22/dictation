@@ -1,0 +1,36 @@
+# Example configuration for free-dictation.
+#
+# Copy this to the standard location and edit, or just run:  dictate --init
+#   macOS:   ~/Library/Application Support/free-dictation/config.yaml
+#   Windows: %APPDATA%\free-dictation\config.yaml
+#
+# Every key is optional; anything you omit uses the built-in default.
+
+# --- Hold-to-talk hotkey ---------------------------------------------------
+# Hold this key while speaking; release to transcribe and type.
+# Run `dictate --list-keys` to see all accepted names.
+# Good choices: right_cmd / right_option (macOS), right_ctrl (Windows), f13.
+hotkey: right_cmd
+
+# --- Whisper model ---------------------------------------------------------
+# Accuracy vs speed: tiny(.en) < base(.en) < small(.en) < medium(.en) < large-v3
+# The ".en" variants are English-only and a bit faster/more accurate for English.
+model: base.en
+device: auto          # auto | cpu | cuda
+compute_type: auto    # auto | int8 | int8_float16 | float16 | float32
+language: en          # language hint; set to null to auto-detect
+
+# --- Audio -----------------------------------------------------------------
+sample_rate: 16000    # Whisper expects 16 kHz; leave as-is unless you know better.
+input_device: null    # null = system default mic. Run `dictate --list-devices`.
+min_duration: 0.3     # ignore key taps shorter than this (seconds)
+
+# --- Output ----------------------------------------------------------------
+output_mode: paste        # paste (Cmd/Ctrl+V) | type (per-keystroke)
+restore_clipboard: true   # put your previous clipboard back after pasting
+trailing_space: true      # append a space so dictations chain together
+capitalize_first: true    # capitalize the first letter
+
+# --- Feedback --------------------------------------------------------------
+sound_cues: true      # play a short sound on start/stop
+verbose: true         # print status and transcripts to the console
