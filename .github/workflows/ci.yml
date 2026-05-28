@@ -1,9 +1,16 @@
 name: CI
 
 on:
+  # Run on PRs (covers feature branches) and on pushes to main. Limiting push
+  # to main avoids running the suite twice for branches that already have a PR.
   push:
-    branches: ["**"]
+    branches: ["main"]
   pull_request:
+
+# A newer push to the same branch/PR cancels in-progress runs for it.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
