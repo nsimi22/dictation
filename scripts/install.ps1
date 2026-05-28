@@ -16,9 +16,10 @@ $ErrorActionPreference = "Stop"
 
 $Repo = if ($env:DICTATION_REPO) { $env:DICTATION_REPO } else { "https://github.com/nsimi22/dictation.git" }
 
-# Find a Python launcher.
+# Find a Python launcher. Prefer the `py` launcher over `python`, since on
+# Windows `python` is often a Microsoft Store stub that doesn't really run.
 $py = $null
-foreach ($candidate in @("python", "py")) {
+foreach ($candidate in @("py", "python")) {
     if (Get-Command $candidate -ErrorAction SilentlyContinue) { $py = $candidate; break }
 }
 if (-not $py) {

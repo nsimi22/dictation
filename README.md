@@ -50,20 +50,27 @@ curl -fsSL https://raw.githubusercontent.com/nsimi22/dictation/main/scripts/inst
 irm https://raw.githubusercontent.com/nsimi22/dictation/main/scripts/install.ps1 | iex
 ```
 
-Then open a new terminal and run **`dictate-gui`** (or `dictate`).
+Then **open a new terminal** and run **`dictate-gui`** (or `dictate`). The new
+terminal matters: pipx puts the commands in `~/.local/bin` and you need a fresh
+shell to pick up the updated PATH.
 
 Prefer to do it by hand? It's just pipx:
 
 ```bash
-python3 -m pip install --user pipx        # if you don't have pipx yet
+# Install pipx if you don't have it (macOS: `brew install pipx` is most reliable)
+python3 -m pip install --user pipx && python3 -m pipx ensurepath
+# then, in a NEW terminal:
 pipx install git+https://github.com/nsimi22/dictation.git
 ```
+
+If `dictate` still isn't found afterwards, run `pipx ensurepath` and open a new
+terminal (or add `~/.local/bin` to your PATH).
 
 To **update** later, re-run the install command (or `pipx reinstall free-dictation`).
 
 > **Private repo?** If the GitHub repo isn't public, your teammates need read
-> access to it. Use the SSH URL so git auth just works:
-> `DICTATION_REPO=git@github.com:nsimi22/dictation.git` before running the
+> access to it. Use the SSH URL so git auth just works — set
+> `DICTATION_REPO=ssh://git@github.com/nsimi22/dictation.git` before running the
 > script (or `pipx install "git+ssh://git@github.com/nsimi22/dictation.git"`).
 
 > **macOS note:** if you hit a `PortAudioError`, install PortAudio once with

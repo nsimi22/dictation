@@ -12,8 +12,8 @@
 # `dictate` and `dictate-gui` commands on your PATH. Re-running upgrades it.
 #
 # Overrides:
-#   DICTATION_REPO=git@github.com:nsimi22/dictation.git ./scripts/install.sh   # SSH (private repos)
-#   PYTHON=python3.11 ./scripts/install.sh                                     # pick a Python
+#   DICTATION_REPO=ssh://git@github.com/nsimi22/dictation.git ./scripts/install.sh   # SSH (private repos)
+#   PYTHON=python3.11 ./scripts/install.sh                                            # pick a Python
 set -euo pipefail
 
 REPO_URL="${DICTATION_REPO:-https://github.com/nsimi22/dictation.git}"
@@ -24,19 +24,41 @@ if ! command -v "$PY" >/dev/null 2>&1; then
   exit 1
 fi
 
-# Ensure pipx is available. If we have to install it, drive it via `python -m`
-# so we don't depend on PATH changes taking effect in this same shell.
+# Bootstrap pipx if it isn't already installed. Modern macOS (Homebrew) and
+# Linux ship "externally managed" Pythons that reject `pip install --user`
+# (PEP 668), so we prefer Homebrew and fall back to allowing the user install.
+bootstrap_pipx() {
+  if command -v brew >/dev/null 2>&1; then
+    echo "Installing pipx via Homebrew..."
+    brew install pipx && return 0
+  fi
+  echo "Installing pipx..."
+  if "$PY" -m pip install --user --quiet pipx; then
+    return 0
+  fi
+  # Retry for PEP 668 "externally-managed-environment" Pythons.
+  "$PY" -m pip install --user --quiet --break-system-packages pipx
+}
+
+# Drive pipx via `python -m` after a fresh install so we don't depend on PATH
+# changes (from `ensurepath`) taking effect in this same shell.
 if command -v pipx >/dev/null 2>&1; then
   PIPX=(pipx)
 else
-  echo "Installing pipx..."
-  "$PY" -m pip install --user --quiet pipx
-  "$PY" -m pipx ensurepath
+  bootstrap_pipx
+  "$PY" -m pipx ensurepath || true
   PIPX=("$PY" -m pipx)
 fi
 
+# Accept either a bare repo URL (we add the pip "git+" prefix) or a full
+# pip VCS spec that already has it.
+case "$REPO_URL" in
+  git+*) SPEC="$REPO_URL" ;;
+  *)     SPEC="git+${REPO_URL}" ;;
+esac
+
 echo "Installing free-dictation from ${REPO_URL} ..."
-"${PIPX[@]}" install --force "git+${REPO_URL}"
+"${PIPX[@]}" install --force "$SPEC"
 
 cat <<'EOF'
 
