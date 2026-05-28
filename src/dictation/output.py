@@ -56,7 +56,13 @@ class TextInjector:
             except Exception:
                 previous = None
 
-        pyperclip.copy(text)
+        # If we can't put our text on the clipboard, bail out rather than
+        # firing the paste shortcut — otherwise we'd paste whatever stale
+        # content happened to already be there.
+        try:
+            pyperclip.copy(text)
+        except Exception as exc:
+            raise RuntimeError(f"Could not write to clipboard: {exc}") from exc
 
         kb: Controller = self._keyboard()
         modifier = Key.cmd if sys.platform == "darwin" else Key.ctrl

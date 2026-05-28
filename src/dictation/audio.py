@@ -86,9 +86,3 @@ class Recorder:
         audio = np.concatenate(frames, axis=0)
         # Collapse to a 1-D mono signal regardless of input channel shape.
         return audio.reshape(-1).astype(np.float32)
-
-    def duration(self, audio: np.ndarray) -> float:
-        """Length of an audio buffer in seconds."""
-        if audio is None or len(audio) == 0:
-            return 0.0
-        return len(audio) / float(self.sample_rate)

@@ -21,6 +21,7 @@ free, works offline, and your audio never leaves your computer**.
 - 🔒 **Local & private**: audio is transcribed on-device; nothing is uploaded.
 - 💸 **Free**: no subscription, no API keys, no usage limits.
 - ⌨️ **Types anywhere**: pastes into the focused app (or types key-by-key).
+- 🖥️ **Desktop app**: a simple window to configure settings and start/stop.
 - 🖥️ **Cross-platform**: macOS and Windows from a single codebase.
 - ⚙️ **Configurable**: model size, hotkey, language, output mode, and more.
 
@@ -46,7 +47,28 @@ pip install -e .                 # gives you the `dictate` command
 > which ships its own PortAudio binary. If you hit a PortAudio error, install
 > it with Homebrew: `brew install portaudio`.
 
-## Run
+## Desktop app (GUI)
+
+Prefer a window over the terminal? Launch the desktop app:
+
+```bash
+dictate-gui          # or:  dictate --gui
+```
+
+It gives you a simple window to:
+
+- pick your **hotkey, model, language, microphone, and output mode** and **Save**
+  them (writes the same config file as below);
+- **Start / Stop** dictation with a button;
+- watch a live **status** light (ready → recording → transcribing) and a log of
+  everything you've dictated.
+
+The GUI uses Tkinter, which is bundled with the official python.org installers
+on macOS and Windows — nothing extra to install. (If you built Python yourself
+and Tkinter is missing: macOS `brew install python-tk`; otherwise just use the
+`dictate` CLI below.)
+
+## Run (command line)
 
 ```bash
 dictate
@@ -154,6 +176,7 @@ dictate --version
 | Module                      | Responsibility                                   |
 |-----------------------------|--------------------------------------------------|
 | `dictation/app.py`          | Orchestrates hotkey → record → transcribe → type |
+| `dictation/gui.py`          | Tkinter desktop app for settings + start/stop    |
 | `dictation/audio.py`        | Microphone capture (`sounddevice`)               |
 | `dictation/transcribe.py`   | Local speech-to-text (`faster-whisper`)          |
 | `dictation/output.py`       | Pastes/types text into the focused app           |

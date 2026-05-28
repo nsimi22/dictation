@@ -25,6 +25,7 @@ dev = ["pytest>=7.0"]
 
 [project.scripts]
 dictate = "dictation.__main__:main"
+dictate-gui = "dictation.gui:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

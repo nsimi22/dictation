@@ -29,6 +29,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Write a default config file to the standard location and exit.",
     )
+    p.add_argument("--gui", action="store_true", help="Launch the desktop GUI instead of the CLI.")
     p.add_argument("--list-keys", action="store_true", help="List valid hotkey names and exit.")
     p.add_argument("--list-devices", action="store_true", help="List audio input devices and exit.")
     # Per-run overrides of the most common settings.
@@ -51,6 +52,11 @@ def main(argv: list[str] | None = None) -> int:
         path = write_default_config(args.config)
         print(f"Wrote default config to {path}")
         return 0
+
+    if args.gui:
+        from .gui import main as gui_main
+
+        return gui_main(["--config", args.config] if args.config else None)
 
     if args.list_keys:
         from .keys import available_key_names

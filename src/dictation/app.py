@@ -11,7 +11,6 @@ keyboard listener.
 
 from __future__ import annotations
 
-import sys
 import threading
 import time
 
@@ -25,8 +24,23 @@ from .transcribe import Transcriber
 
 
 class DictationApp:
-    def __init__(self, config: Config):
+    def __init__(
+        self,
+        config: Config,
+        *,
+        on_status=None,
+        on_transcript=None,
+        on_log=None,
+    ):
         self.config = config
+        # Optional hooks so a GUI (or other front-end) can observe the app
+        # without poking at internals. All are best-effort and may be None.
+        #   on_status(state: str)      -> "ready" | "recording" | "transcribing"
+        #   on_transcript(text: str)   -> final, cleaned text that was inserted
+        #   on_log(message: str)       -> human-readable status/log lines
+        self.on_status = on_status
+        self.on_transcript = on_transcript
+        self.on_log = on_log
         self.recorder = Recorder(
             sample_rate=config.sample_rate,
             input_device=config.input_device,
@@ -51,6 +65,18 @@ class DictationApp:
     def _log(self, message: str) -> None:
         if self.config.verbose:
             print(message, flush=True)
+        if self.on_log is not None:
+            try:
+                self.on_log(message)
+            except Exception:
+                pass
+
+    def _status(self, state: str) -> None:
+        if self.on_status is not None:
+            try:
+                self.on_status(state)
+            except Exception:
+                pass
 
     # --- lifecycle ---------------------------------------------------------
     def start(self) -> None:
@@ -71,6 +97,7 @@ class DictationApp:
             f"Ready. Hold [{self.config.hotkey}] and speak; release to dictate. "
             "Press Ctrl+C in this window to quit."
         )
+        self._status("ready")
 
     def run_forever(self) -> None:
         """Start and block until interrupted."""
@@ -105,6 +132,7 @@ class DictationApp:
             return
         if self.config.sound_cues:
             start_cue()
+        self._status("recording")
         self._log("● recording...")
 
     def _on_release(self, key) -> None:  # noqa: ANN001
@@ -118,6 +146,7 @@ class DictationApp:
 
         if held < self.config.min_duration:
             self._log(f"(ignored {held:.2f}s tap)")
+            self._status("ready")
             return
 
         # Transcribe off the listener thread so we never block key events.
@@ -129,10 +158,12 @@ class DictationApp:
 
     # --- worker ------------------------------------------------------------
     def _transcribe_and_type(self, audio) -> None:  # noqa: ANN001
+        self._status("transcribing")
         try:
             raw = self.transcriber.transcribe(audio)
         except Exception as exc:
             self._log(f"[error] Transcription failed: {exc}")
+            self._status("ready")
             return
 
         text = clean_transcript(
@@ -142,6 +173,7 @@ class DictationApp:
         )
         if not text:
             self._log("(no speech detected)")
+            self._status("ready")
             return
 
         self._log(f"📝 {text.rstrip()}")
@@ -150,3 +182,10 @@ class DictationApp:
         except Exception as exc:
             self._log(f"[error] Could not type text: {exc}")
             self._log("   On macOS, grant Accessibility permission (see README).")
+        else:
+            if self.on_transcript is not None:
+                try:
+                    self.on_transcript(text)
+                except Exception:
+                    pass
+        self._status("ready")
