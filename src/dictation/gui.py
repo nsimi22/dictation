@@ -256,10 +256,15 @@ class DictationGUI:
         try:
             self.app.start()
         except Exception as exc:
-            self._ui(self._append_log, f"[error] Could not start: {exc}")
-            self._ui(self._set_status, "stopped")
-            self.app = None
-            self._ui(lambda: self.start_btn.config(text="Start Dictation"))
+            # Run all cleanup on the Tk thread so shared state (self.app) and
+            # the widgets are only ever touched from one thread.
+            self._ui(self._on_start_failed, exc)
+
+    def _on_start_failed(self, exc) -> None:
+        self._append_log(f"[error] Could not start: {exc}")
+        self.app = None
+        self.start_btn.config(text="Start Dictation")
+        self._set_status("stopped")
 
     def _stop(self) -> None:
         if self.app is not None:
