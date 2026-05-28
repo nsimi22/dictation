@@ -32,7 +32,44 @@ free, works offline, and your audio never leaves your computer**.
 - A few hundred MB of disk for the Whisper model (downloaded automatically on
   first run)
 
-## Install
+## Install (recommended — for everyday users / your team)
+
+The easiest way to get `dictate` and `dictate-gui` onto your machine is one
+command. It uses [pipx](https://pipx.pypa.io/) to install the app in its own
+isolated environment and put the commands on your PATH. **Requires Python 3.9+.**
+
+**macOS / Linux:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/nsimi22/dictation/main/scripts/install.sh | bash
+```
+
+**Windows (PowerShell):**
+
+```powershell
+irm https://raw.githubusercontent.com/nsimi22/dictation/main/scripts/install.ps1 | iex
+```
+
+Then open a new terminal and run **`dictate-gui`** (or `dictate`).
+
+Prefer to do it by hand? It's just pipx:
+
+```bash
+python3 -m pip install --user pipx        # if you don't have pipx yet
+pipx install git+https://github.com/nsimi22/dictation.git
+```
+
+To **update** later, re-run the install command (or `pipx reinstall free-dictation`).
+
+> **Private repo?** If the GitHub repo isn't public, your teammates need read
+> access to it. Use the SSH URL so git auth just works:
+> `DICTATION_REPO=git@github.com:nsimi22/dictation.git` before running the
+> script (or `pipx install "git+ssh://git@github.com/nsimi22/dictation.git"`).
+
+> **macOS note:** if you hit a `PortAudioError`, install PortAudio once with
+> `brew install portaudio`, then re-run the installer.
+
+## Install from source (for development)
 
 ```bash
 git clone https://github.com/nsimi22/dictation.git
@@ -42,10 +79,6 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 pip install -e .                 # gives you the `dictate` command
 ```
-
-> **macOS note:** `pyaudio`/PortAudio isn't required — we use `sounddevice`,
-> which ships its own PortAudio binary. If you hit a PortAudio error, install
-> it with Homebrew: `brew install portaudio`.
 
 ## Desktop app (GUI)
 
