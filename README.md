@@ -1,5 +1,18 @@
 # free-dictation
 
+> **DEPRECATED — use [nsimi22/dictation-tauri](https://github.com/nsimi22/dictation-tauri) instead.**
+>
+> This Python version stopped working on macOS 26: `pynput`'s keyboard
+> backend calls Text Input Source APIs from a background thread, and
+> macOS 26 tightened `dispatch_assert_queue` to crash on that. The
+> successor is a Tauri 2 rewrite (Rust core + `whisper.cpp` + Metal
+> acceleration) that avoids the broken codepath entirely.
+>
+> The code below is kept for historical reference; new installs should
+> go to the Tauri repo. The repository is archived (read-only).
+
+---
+
 A **free, local, privacy-first dictation app** for macOS and Windows — a free
 alternative to [Willow Voice](https://willowvoice.com/).
 
